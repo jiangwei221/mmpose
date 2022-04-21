@@ -5,6 +5,7 @@ import warnings
 from argparse import ArgumentParser
 
 import mmcv
+import numpy as np
 
 from mmpose.apis import (inference_bottom_up_pose_model, init_pose_model,
                          vis_pose_result)
@@ -66,6 +67,7 @@ def main():
     else:
         raise ValueError('Image path should be an image or image folder.'
                          f'Got invalid image path: {args.img_path}')
+    image_list = sorted(image_list)
 
     # build the pose model from a config file and a checkpoint file
     pose_model = init_pose_model(
@@ -100,6 +102,7 @@ def main():
             pose_nms_thr=args.pose_nms_thr,
             return_heatmap=return_heatmap,
             outputs=output_layer_names)
+        pose_results = pose_results[0:1]
 
         if args.out_img_root == '':
             out_file = None
@@ -121,6 +124,10 @@ def main():
             kpt_score_thr=args.kpt_thr,
             show=args.show,
             out_file=out_file)
+        np.save( os.path.join(
+                args.out_img_root,
+                f'{osp.splitext(osp.basename(image_name))[0]}.png.npy'),
+                pose_results[0]['keypoints'])
 
 
 if __name__ == '__main__':
